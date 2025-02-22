@@ -1,5 +1,5 @@
 aside {
-    position: absolute;
+    position: sticky;
     top: 0;
     right: 0;
     width: 250px;
@@ -7,4 +7,7 @@ aside {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding: 15px;
     border-radius: 4px;
+
+    margin-left: auto;
+    background-color: hsl(0, 0%, 100%);
 }

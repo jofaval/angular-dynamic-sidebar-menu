@@ -1,7 +1,9 @@
 <ul>
   @for (element of elements; track $index) {
   <li>
-    {{ element.text }}
+    <button (click)="element.element.scrollIntoView({ behavior: 'smooth' })" [className]="element.highlighted ? 'highlighted' : ''">
+      {{ element.text }}
+    </button>
 
     @if (element.children && element.children.length) {
     <app-ul-list [elements]="element.children"></app-ul-list>

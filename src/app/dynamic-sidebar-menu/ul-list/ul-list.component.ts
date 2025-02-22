@@ -3,6 +3,8 @@ import { Component, Input } from '@angular/core';
 export type UlListElement = {
   text: string;
   children: UlListElement[];
+  element: Element;
+  highlighted: boolean;
 };
 
 @Component({

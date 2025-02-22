@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, HostListener, Input, OnInit } from '@angular/core';
 import { UlListComponent, UlListElement } from './ul-list/ul-list.component';
 
 type HeadingElement = {
@@ -6,6 +6,8 @@ type HeadingElement = {
   children: HeadingElement[];
   text: string;
   level: number;
+  element: Element;
+  highlighted: boolean;
 };
 
 @Component({
@@ -18,6 +20,95 @@ export class DynamicSidebarMenuComponent implements OnInit {
   @Input() querySelector = 'main';
   loading = true;
   headings: UlListElement[] = [];
+
+  clearHighlight(headings: UlListElement[]): UlListElement[] {
+    return headings.map((heading) => {
+      return {
+        ...heading,
+        highlighted: false,
+        children: this.clearHighlight(heading.children),
+      };
+    });
+  }
+
+  getElementScrollPair({
+    acc = [],
+    headings,
+  }: {
+    headings: UlListElement[];
+    acc?: { element: Element; scroll: number }[];
+  }): { element: Element; scroll: number }[] {
+    if (headings.length === 0) return acc;
+
+    headings.forEach((heading) => {
+      const rect = heading.element.getBoundingClientRect();
+      const diff = rect.top - window.scrollY + window.outerHeight;
+      console.log({ diff, rect, scroll: window.scrollY, title: heading.text });
+      if (diff > 0) {
+        return;
+      }
+
+      acc.push({ element: heading.element, scroll: diff });
+      if (heading.children.length > 0) {
+        this.getElementScrollPair({ headings: heading.children, acc });
+      }
+    });
+
+    return acc;
+  }
+
+  highlightElement({
+    element,
+    headings,
+  }: {
+    headings: UlListElement[];
+    element: Element;
+  }) {
+    headings.forEach((heading) => {
+      if (heading.element === element) {
+        heading.highlighted = true;
+        return;
+      }
+
+      if (heading.children.length > 0) {
+        this.highlightElement({ element, headings: heading.children });
+      }
+    });
+  }
+
+  getClosestMatch() {
+    let scrollPair = [];
+
+    try {
+      scrollPair = this.getElementScrollPair({ headings: this.headings });
+    } catch (error) {
+      scrollPair = [{ scroll: 0, element: this.headings[0].element }];
+    }
+
+    let closestMatch = scrollPair
+      .sort((a, b) => a.scroll - b.scroll)
+      .reverse()[0];
+
+    if (!closestMatch) {
+      closestMatch = scrollPair[0];
+    }
+
+    return closestMatch;
+  }
+
+  @HostListener('window:scroll', ['$event']) scrollTracker(event: Event) {
+    this.headings = this.clearHighlight(this.headings);
+
+    const closestMatch = this.getClosestMatch() ?? {
+      scroll: 0,
+      element: this.headings[0].element,
+    };
+
+    this.highlightElement({
+      element: closestMatch.element,
+      headings: this.headings,
+    });
+  }
 
   generate() {
     const element = document.querySelector(this.querySelector);
@@ -37,6 +128,8 @@ export class DynamicSidebarMenuComponent implements OnInit {
       children: [],
       text: headings[0].textContent ?? '',
       level: parseInt(headings[0].tagName[1]),
+      element: headings[0],
+      highlighted: false,
     };
     elements.push(previous);
 
@@ -44,7 +137,14 @@ export class DynamicSidebarMenuComponent implements OnInit {
       const level = parseInt(heading.tagName[1]);
       const text = heading.textContent ?? '';
 
-      const node: HeadingElement = { parent: null, children: [], text, level };
+      const node: HeadingElement = {
+        parent: null,
+        children: [],
+        text,
+        level,
+        element: heading,
+        highlighted: false,
+      };
 
       if (previous.level < node.level) {
         node.parent = previous;
@@ -78,5 +178,10 @@ export class DynamicSidebarMenuComponent implements OnInit {
     setTimeout(() => {
       this.generate();
     }, 1_000);
+
+    console.log(
+      'this.querySelector',
+      document.querySelector(this.querySelector)
+    );
   }
 }
