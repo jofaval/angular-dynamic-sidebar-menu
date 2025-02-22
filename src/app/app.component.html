@@ -1,10 +1,12 @@
-<main class="main">
+<section>
   <app-dynamic-sidebar-menu querySelector="main"></app-dynamic-sidebar-menu>
 
-  <app-markdown-converter
-    (content)="onMarkdownChange($event)"
-  ></app-markdown-converter>
-  <app-markdown-preview [content]="markdownContent"></app-markdown-preview>
-</main>
+  <main class="main">
+    <app-markdown-converter
+      (content)="onMarkdownChange($event)"
+    ></app-markdown-converter>
+    <app-markdown-preview [content]="markdownContent"></app-markdown-preview>
+  </main>
+</section>
 
 <router-outlet />
