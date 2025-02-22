@@ -42,13 +42,11 @@ export class DynamicSidebarMenuComponent implements OnInit {
 
     headings.forEach((heading) => {
       const rect = heading.element.getBoundingClientRect();
-      const diff = rect.top - window.scrollY + window.outerHeight;
-      console.log({ diff, rect, scroll: window.scrollY, title: heading.text });
-      if (diff > 0) {
+      if (rect.y > 0) {
         return;
       }
 
-      acc.push({ element: heading.element, scroll: diff });
+      acc.push({ element: heading.element, scroll: rect.y });
       if (heading.children.length > 0) {
         this.getElementScrollPair({ headings: heading.children, acc });
       }
@@ -85,29 +83,20 @@ export class DynamicSidebarMenuComponent implements OnInit {
       scrollPair = [{ scroll: 0, element: this.headings[0].element }];
     }
 
-    let closestMatch = scrollPair
-      .sort((a, b) => a.scroll - b.scroll)
-      .reverse()[0];
-
-    if (!closestMatch) {
-      closestMatch = scrollPair[0];
-    }
-
-    return closestMatch;
+    return scrollPair.sort((a, b) => a.scroll - b.scroll).reverse()[0];
   }
 
   @HostListener('window:scroll', ['$event']) scrollTracker(event: Event) {
     this.headings = this.clearHighlight(this.headings);
 
-    const closestMatch = this.getClosestMatch() ?? {
-      scroll: 0,
-      element: this.headings[0].element,
-    };
+    const closestMatch = this.getClosestMatch();
 
-    this.highlightElement({
-      element: closestMatch.element,
-      headings: this.headings,
-    });
+    if (closestMatch) {
+      this.highlightElement({
+        element: closestMatch.element,
+        headings: this.headings,
+      });
+    }
   }
 
   generate() {
