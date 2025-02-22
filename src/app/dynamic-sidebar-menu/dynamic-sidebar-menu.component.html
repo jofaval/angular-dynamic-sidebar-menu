@@ -1,0 +1,9 @@
+<aside>
+  @if (loading) {
+  <p>Cargando...</p>
+  }
+
+  <app-ul-list [elements]="headings"></app-ul-list>
+
+  <button (click)="generate()">Generar sidebar</button>
+</aside>

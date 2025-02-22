@@ -1,0 +1,11 @@
+<ul>
+  @for (element of elements; track $index) {
+  <li>
+    {{ element.text }}
+
+    @if (element.children && element.children.length) {
+    <app-ul-list [elements]="element.children"></app-ul-list>
+    }
+  </li>
+  }
+</ul>
