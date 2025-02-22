@@ -38,7 +38,8 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npm run build
+      - run: npm install -g @angular/cli
+      - run: ng build --base-href /angular-dynamic-sidebar-menu/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
